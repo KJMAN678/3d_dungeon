@@ -3,7 +3,7 @@
 ### コンパイル
 
 ```C++
-g++ -o out 3d_dungion.cpp
+g++ -o out 3d_dungion.cpp -std=c++11
 ```
 
 -> program というコンパイルされたファイルが出来上がる

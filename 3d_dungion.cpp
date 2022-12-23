@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <curses.h>
+#include <vector>
+#include <time.h>
 
 // 迷路のサイズ
 #define MAZE_WIDTH (8)
@@ -68,6 +70,10 @@ void DigWall(VEC2 _position, int _direction)
     // 隣のマスが迷路の範囲内かどうか判定
     if (IsInsideMaze(nextPosition))
     {
+        // 隣の部屋の掘る壁の方位を宣言
+        int nextDirection = (_direction + 2) % DIRECTION_MAX;
+        // 隣の部屋の壁を掘る
+        maze[nextPosition.y][nextPosition.x].walls[nextDirection] = false;
     }
 }
 
@@ -78,7 +84,7 @@ void DrawMap()
 
         for (int x = 0; x < MAZE_WIDTH; x++)
         {
-            printf("＋%s＋", maze[y][x].walls[DIRECTION_NORTH] ? "-" : "　");
+            printf("＋%s＋", maze[y][x].walls[DIRECTION_NORTH] ? "-" : " ");
         }
         printf("\n");
 
@@ -95,10 +101,32 @@ void DrawMap()
 
         for (int x = 0; x < MAZE_WIDTH; x++)
         {
-            printf("＋%s＋", maze[y][x].walls[DIRECTION_SOUTH] ? "-" : "　");
+            printf("＋%s＋", maze[y][x].walls[DIRECTION_SOUTH] ? "-" : " ");
         }
         printf("\n");
     }
+}
+
+bool CanDigWall(VEC2 _position, int _direction)
+{
+    // 隣の座標を宣言する
+    VEC2 nextPosition = VecAdd(_position, directions[_direction]);
+
+    // 隣の座標が迷路の範囲内でないかどうかを判定
+    if (!IsInsideMaze(nextPosition))
+    {
+        return false;
+    }
+
+    for (int i = 0; i < DIRECTION_MAX; i++)
+    {
+        if (!maze[nextPosition.y][nextPosition.x].walls[i])
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void GenerateMap()
@@ -114,6 +142,55 @@ void GenerateMap()
             }
         }
     }
+
+    // 現在の座標を宣言
+    VEC2 currentPostion = {0, 0};
+
+    // 壁を掘るべきマスのリスト
+    std::vector<VEC2> toDigWallPositions;
+
+    // 壁がなくなるまで掘る
+    while (1)
+    {
+        // 掘れる壁の方位のリスト
+        std::vector<int> canDigDirections;
+
+        for (int i = 0; i < DIRECTION_MAX; i++)
+        {
+            if (CanDigWall(currentPostion, i))
+            {
+                canDigDirections.push_back(i);
+            }
+        }
+        // 掘れる壁があるかどうかを判定する
+        if (canDigDirections.size() > 0)
+        {
+            int digDirection = canDigDirections[rand() % canDigDirections.size()];
+
+            // 対象の壁を掘る
+            DigWall(currentPostion, digDirection);
+
+            // 堀田壁の向こう側に移動する
+            currentPostion = VecAdd(currentPostion, directions[digDirection]);
+
+            // 壁を掘るべきますの座標リストに現在の座標を加える
+            toDigWallPositions.push_back(currentPostion);
+        }
+        else
+        {
+            // 壁を掘るべきますのリストから現在のマスを削除
+            toDigWallPositions.erase(toDigWallPositions.begin());
+
+            // 壁を掘るべきますのリストが空かどうか判定する
+            if (toDigWallPositions.size() <= 0)
+            {
+                break;
+            }
+
+            // 壁を掘るべきマスのリストから、先頭のマスを取得し移動する
+            currentPostion = toDigWallPositions.front();
+        }
+    }
 }
 
 // ゲームの初期化
@@ -124,6 +201,9 @@ void Init()
 
 int main()
 {
+    // 乱数をシャッフルする
+    // srand((unsigned int)time(NULL));
+
     Init();
 
     while (1)
@@ -132,10 +212,8 @@ int main()
 
         DrawMap();
 
-        // initscr();
         switch (getchar())
         {
         }
-        // endwin();
     }
 }
