@@ -7,6 +7,7 @@
 // 迷路のサイズ
 #define MAZE_WIDTH (8)
 #define MAZE_HEIGHT (8)
+#define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 
 // 方位の種類
 enum
@@ -31,6 +32,15 @@ typedef struct
 {
     int x, y;
 } VEC2;
+
+// プレイヤー
+typedef struct
+{
+    VEC2 position; // 座標
+    int direction; // 向いてる方位
+} CHARACTER;
+
+CHARACTER player;
 
 bool IsInsideMaze(VEC2 _position)
 {
@@ -84,7 +94,7 @@ void DrawMap()
 
         for (int x = 0; x < MAZE_WIDTH; x++)
         {
-            printf("＋%s＋", maze[y][x].walls[DIRECTION_NORTH] ? "-" : " ");
+            printf("＋%s＋", maze[y][x].walls[DIRECTION_NORTH] ? "―" : " ");
         }
         printf("\n");
 
@@ -92,6 +102,20 @@ void DrawMap()
         {
             // 床のアスキーアート
             char floorAA[] = " ";
+
+            if ((x == player.position.x) && (y == player.position.y))
+            {
+                const char *directionAA[] = {
+                    "^", // 北
+                    "<", // 西
+                    "v", // 南
+                    ">"  // 東
+                };
+
+                // 床のアスキーアートにプレイヤーのアスキーアートをコピーする
+                strcpy(floorAA, directionAA[player.direction]);
+            }
+
             printf(
                 "%s%s%s", maze[y][x].walls[DIRECTION_WEST] ? "｜" : "　",
                 floorAA,
@@ -101,7 +125,7 @@ void DrawMap()
 
         for (int x = 0; x < MAZE_WIDTH; x++)
         {
-            printf("＋%s＋", maze[y][x].walls[DIRECTION_SOUTH] ? "-" : " ");
+            printf("＋%s＋", maze[y][x].walls[DIRECTION_SOUTH] ? "―" : " ");
         }
         printf("\n");
     }
@@ -197,6 +221,9 @@ void GenerateMap()
 void Init()
 {
     GenerateMap();
+
+    player.position = {0, 0};
+    player.direction = DIRECTION_NORTH;
 }
 
 int main()
@@ -214,6 +241,33 @@ int main()
 
         switch (getchar())
         {
+        case 'w':
+            if (!maze[player.position.y][player.position.x].walls[player.direction])
+            {
+                VEC2 nextPosition = VecAdd(player.position, directions[player.direction]);
+
+                if (IsInsideMaze(nextPosition))
+                {
+                    player.position = nextPosition;
+                }
+            }
+
+            break;
+
+        case 's':
+            player.direction += 2; // 後ろを向く
+            break;
+
+        case 'a':
+            player.direction++; // 左を向く
+            break;
+
+        case 'd':
+            player.direction--; // 右を向く
+            break;
         }
+
+        // プレイヤーの向いている方位を範囲内に補正する
+        player.direction = (DIRECTION_MAX + player.direction) % DIRECTION_MAX;
     }
 }
