@@ -1,4 +1,10 @@
-## 「小一時間でゲームを作る」　の写経
+## 「小一時間でゲームを作る」　 3D ダンジョンの写経
+
+### 開発環境
+
+- M1 Mac
+- Ventura 13.1
+- Apple clang version 14.0.0 (clang-1400.0.29.202)
 
 ### コンパイル
 
@@ -17,7 +23,6 @@ g++ -o out 3d_dungion.cpp -std=c++11
 ### プレイ動画
 
 https://user-images.githubusercontent.com/45703844/209433262-b2b7373f-8376-46c0-9844-19c8ad4dd258.mov
-
 
 ### 補足
 
