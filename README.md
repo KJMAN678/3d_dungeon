@@ -14,6 +14,13 @@ g++ -o out 3d_dungion.cpp -std=c++11
 ./out
 ```
 
+### プレイ動画
+
+https://user-images.githubusercontent.com/45703844/209433262-b2b7373f-8376-46c0-9844-19c8ad4dd258.mov
+
+
+### 補足
+
 #include <conio.h> は Mac だと使えない。
 #include <curses.h> に置き換える
 
