@@ -19,6 +19,18 @@ enum
     DIRECTION_MAX
 };
 
+// プレイヤーからの相対位置の種類
+enum
+{
+    LOCATION_FRONT_LEFT,
+    LOCATION_FRONT_RIGHT,
+    LOCATION_FRONT,
+    LOCATION_LEFT,
+    LOCATION_RIGHT,
+    LOCATION_CENTER,
+    LOCATION_MAX
+};
+
 // 迷路のマス
 typedef struct
 {
@@ -41,6 +53,189 @@ typedef struct
 } CHARACTER;
 
 CHARACTER player;
+
+const char *frontLeftNorth =
+    "         \n"
+    "         \n"
+    "  _      \n"
+    " |#|     \n"
+    " |_|     \n"
+    "         \n"
+    "         \n"
+    "         \n";
+
+const char *frontRightNorth =
+    "         \n"
+    "         \n"
+    "      _  \n"
+    "     |#| \n"
+    "     |_| \n"
+    "         \n"
+    "         \n"
+    "         \n";
+
+const char *frontNorth =
+    "         \n"
+    "         \n"
+    "    _    \n"
+    "   |#|   \n"
+    "   |_|   \n"
+    "         \n"
+    "         \n"
+    "         \n";
+
+const char *frontWest =
+    "         \n"
+    "         \n"
+    " |L      \n"
+    " |#|     \n"
+    " |#|     \n"
+    " |/      \n"
+    "         \n"
+    "         \n";
+
+const char *frontEast =
+    "         \n"
+    "         \n"
+    "      /| \n"
+    "     |#| \n"
+    "     |#| \n"
+    "      L| \n"
+    "         \n"
+    "         \n";
+
+const char *leftNorth =
+    "         \n"
+    "_        \n"
+    "#|       \n"
+    "#|       \n"
+    "#|       \n"
+    "_|       \n"
+    "         \n"
+    "         \n";
+
+const char *rightNorth =
+    "         \n"
+    "        _\n"
+    "       |#\n"
+    "       |#\n"
+    "       |#\n"
+    "       |_\n"
+    "         \n"
+    "         \n";
+
+const char *north =
+    "         \n"
+    "  _____  \n"
+    " |#####| \n"
+    " |#####| \n"
+    " |#####| \n"
+    " |_____| \n"
+    "         \n"
+    "         \n";
+
+const char *west =
+    "L        \n"
+    "#L       \n"
+    "#|       \n"
+    "#|       \n"
+    "#|       \n"
+    "#|       \n"
+    "#/       \n"
+    "/        \n";
+
+const char *east =
+    "        /\n"
+    "       /#\n"
+    "       |#\n"
+    "       |#\n"
+    "       |#\n"
+    "       |#\n"
+    "       L#\n"
+    "        L\n";
+
+const char *aaTable[LOCATION_MAX][DIRECTION_MAX] = {
+    // 左前
+    {
+        frontLeftNorth, // 北
+        NULL,           // 西
+        NULL,           // 南
+        NULL            // 東
+    },
+    // 右前
+    {
+        frontRightNorth, // 北
+        NULL,            // 西
+        NULL,            // 南
+        NULL             // 東
+    },
+    // 前
+    {
+        frontNorth, // 北
+        frontWest,  // 西
+        NULL,       // 南
+        frontEast   // 東
+    },
+    // 左
+    {
+        leftNorth, // 北
+        NULL,      // 西
+        NULL,      // 南
+        NULL       // 東
+    },
+    // 右
+    {
+        rightNorth, // 北
+        NULL,       // 西
+        NULL,       // 南
+        NULL        // 東
+    },
+    // 中心
+    {
+        north, // 北
+        west,  // 西
+        NULL,  // 南
+        east   // 東
+    }};
+
+// プレイヤーからの相対座標のテーブルを宣言
+VEC2 locations[DIRECTION_MAX][LOCATION_MAX] = {
+    // 北
+    {
+        {-1, -1}, // 左前
+        {1, -1},  // 右前
+        {0, -1},  // 前
+        {-1, 0},  // 左
+        {1, 0},   // 右
+        {0, 0}    // 中心
+    },
+    // 西
+    {
+        {-1, 1},  // 左前
+        {-1, -1}, // 右前
+        {-1, 0},  // 前
+        {0, 1},   // 左
+        {0, -1},  // 右
+        {0, 0}    // 中心
+    },
+    // 南
+    {
+        {1, 1},  // 左前
+        {-1, 1}, // 右前
+        {0, 1},  // 前
+        {1, 0},  // 左
+        {-1, 0}, // 右
+        {0, 0}   // 中心
+    },
+    // 東
+    {
+        {1, -1}, // 左前
+        {1, 1},  // 右前
+        {1, 0},  // 前
+        {0, -1}, // 左
+        {0, 1},  // 右
+        {0, 0}   // 中心
+    }};
 
 bool IsInsideMaze(VEC2 _position)
 {
@@ -217,6 +412,89 @@ void GenerateMap()
     }
 }
 
+// 迷路を擬似3D視点で描画する関数
+void Draw3D()
+{
+    char screen[] =
+        "         \n"
+        "         \n"
+        "         \n"
+        "         \n"
+        "         \n"
+        "         \n"
+        "         \n"
+        "         \n";
+
+    for (int i = 0; i < LOCATION_MAX; i++)
+    {
+        // 絶対位置を宣言
+        VEC2 position = VecAdd(player.position, locations[player.direction][i]);
+
+        // 絶対位置が迷路の範囲外かどうかを判定する
+        if (!IsInsideMaze(position))
+        {
+            continue;
+        }
+        for (int j = 0; j < DIRECTION_MAX; j++)
+        {
+            // プレイヤーからの相対方位を宣言
+            int direction = (DIRECTION_MAX + j - player.direction) % DIRECTION_MAX;
+
+            // 対象の壁がないかどうかを判定、壁なら次の方位へスキップ
+            if (!maze[position.y][position.x].walls[j])
+            {
+                continue;
+            }
+
+            // 合成するアスキーアートがないかどうか判定し、あれば次の相対位置にスキップ
+            if (!aaTable[i][direction])
+            {
+                continue;
+            }
+
+            for (int k = 0; k < sizeof(screen); k++)
+            {
+                if (aaTable[i][direction][k] != ' ')
+                {
+
+                    // 画面バッファーに合成するアスキーアートを書き込む
+                    screen[k] = aaTable[i][direction][k];
+                }
+            }
+        }
+    }
+
+    // 画面バッファーのすべての文字を処理
+    for (int i = 0; i < sizeof(screen); i++)
+    {
+        // 画面バッファーの半角文字を全角文字に変換して描画
+        switch (screen[i])
+        {
+        case ' ':
+            printf("　");
+            break;
+        case '#':
+            printf("　");
+            break;
+        case '_':
+            printf("＿");
+            break;
+        case '|':
+            printf("｜");
+            break;
+        case '/':
+            printf("／");
+            break;
+        case 'L':
+            printf("＼");
+            break;
+        default:
+            printf("%c", screen[i]);
+            break;
+        }
+    }
+}
+
 // ゲームの初期化
 void Init()
 {
@@ -236,7 +514,7 @@ int main()
     while (1)
     {
         system("clear");
-
+        Draw3D();
         DrawMap();
 
         switch (getchar())
