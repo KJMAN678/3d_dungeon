@@ -3,10 +3,16 @@
 #include <curses.h>
 #include <vector>
 #include <time.h>
+#include <chrono>
+#include <thread>
+
+using std::this_thread::sleep_for;
 
 // 迷路のサイズ
 #define MAZE_WIDTH (8)
 #define MAZE_HEIGHT (8)
+#define GOAL_X (MAZE_WIDTH - 1)  // ゴールのX座標
+#define GOAL_Y (MAZE_HEIGHT - 1) // ゴールのY座標
 #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 
 // 方位の種類
@@ -310,6 +316,10 @@ void DrawMap()
                 // 床のアスキーアートにプレイヤーのアスキーアートをコピーする
                 strcpy(floorAA, directionAA[player.direction]);
             }
+            else if ((x == GOAL_X) && (y == GOAL_Y))
+            {
+                strcpy(floorAA, "G");
+            }
 
             printf(
                 "%s%s%s", maze[y][x].walls[DIRECTION_WEST] ? "｜" : "　",
@@ -527,6 +537,28 @@ int main()
                 if (IsInsideMaze(nextPosition))
                 {
                     player.position = nextPosition;
+
+                    // ゴールに到達したかどうかを判定
+                    if ((player.position.x == GOAL_X) && (player.position.y == GOAL_Y))
+                    {
+                        // エンディング処理
+                        system("clear");
+
+                        printf(
+                            "　＊　＊　ＣＯＮＧＲＡＴＵＲＡＴＩＯＮＳ！ ＊　＊\n"
+                            "\n"
+                            "　あなたはついに　でんせつのまよけを　てにいれた！\n"
+                            "\n"
+                            "　しかし、くらくをともにした　「なかま」という\n"
+                            "かけがえのない　たからをてにした　あなたにとって、\n"
+                            "まよけのかがやきも　いろあせて　みえるのであった...\n"
+                            "\n"
+                            "　　　　　　〜　ＴＨＥ ＥＮＤ　〜\n");
+
+                        sleep_for(std::chrono::milliseconds(3000));
+
+                        Init();
+                    }
                 }
             }
 
