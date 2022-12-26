@@ -10,6 +10,8 @@
 
 ```C++
 g++ -o out 3d_dungion.cpp -std=c++11
+
+g++ -o out command_battle.cpp
 ```
 
 -> program というコンパイルされたファイルが出来上がる
